@@ -6,6 +6,7 @@ import pymongo
 from keys import *
 
 def mlab_to_csv():
+    uri = f"mongodb://{mlab_api['username']}:{mlab_api['password']}@ds261277.mlab.com:61277/wiki_scrapper"
     client = pymongo.MongoClient(uri)
 
     db = client.get_default_database()
