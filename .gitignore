@@ -110,3 +110,7 @@ keys.py
 # large data
 pickled_article_info
 pickled_article_info.zip
+article_info.zip
+pickled_article_info_no_redirects.zip
+
+pickled_redirect_info
