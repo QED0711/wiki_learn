@@ -106,3 +106,7 @@ venv.bak/
 
 # api keys
 keys.py
+
+# large data
+pickled_article_info
+pickled_article_info.zip
