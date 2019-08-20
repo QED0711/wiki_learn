@@ -85,3 +85,11 @@ ___
 ### shared_categories:
 
 > number of categories shared between the parent_categories and child_categories
+
+### shared_links:
+
+> number of links shared between the parent and child links columns
+
+### shared_linkshere:
+
+> number of links shared between the parent and child linkshere columns
