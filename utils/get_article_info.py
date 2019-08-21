@@ -92,5 +92,5 @@ def get_article_info(title):
 
 
 if __name__ == "__main__":
-    extract, links, linkshere, categories = get_article_info("Random forest")
-    print(links)
+    parent_extract, parent_links, parent_linkshere, parent_categories = get_article_info("Random forest")
+    print(parent_links)
