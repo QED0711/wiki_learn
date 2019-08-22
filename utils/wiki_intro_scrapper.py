@@ -44,7 +44,7 @@ class WikiIntroScrapper:
         
         for link in self.intro_links:
             current_href = link.get('href')
-            if current_href.startswith("/wiki/") and not ("Help:" in current_href):
+            if current_href.startswith("/wiki/") and not (":" in current_href):
                 self.parsed_links.append(parse_url("https://en.wikipedia.org" + current_href))
                 self.intro_link_titles.append(get_title(current_href))
 
