@@ -29,3 +29,20 @@ def compare_categories(node1, node2, categories):
         return match_count
     except:
         return 1
+
+def rank_order(df, rank_column, ascending=False):
+    """
+    Given dataframe with a column of numerical values, order and rank those values.
+    Allows for ties if a value is the same as the previous value. 
+    """
+    df = df.sort_values(rank_column, ascending=ascending).reset_index().drop('index', axis=1)
+    rankings = [1]
+    for i in range(1, df.shape[0]):
+        # pdb.set_trace()
+        if df[rank_column][i] == df[rank_column][i-1]: # if value is same as last val
+            rankings.append(rankings[-1])
+        else: # if value is different from last val
+            rankings.append(rankings[-1] + 1)
+
+    df[f"{rank_column}_ranked"] = rankings
+    return df
