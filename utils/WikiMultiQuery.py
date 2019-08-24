@@ -173,7 +173,8 @@ def wiki_multi_query(articles, params=None, pages=None):
 
 
 if __name__ == "__main__":
-    print(wiki_multi_query(["Random forest", "Decision tree", "Machine learning", "Sonata"])[3])
+    print(wiki_multi_query(["Random forest", "Decision tree", "Machine learning", "Sonata"])[3]['redirects'])
+
 
 
 
