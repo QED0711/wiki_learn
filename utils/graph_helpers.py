@@ -17,8 +17,8 @@ def format_categories(cat_list):
         cat_dict[cat] = True    
     return cat_dict
 
-def compare_categories(node1, node2, categories):
-    match_count = 1
+def compare_categories(node1, node2, categories, starting_count=1):
+    match_count = starting_count
     if node1 == node2:
         return 1
         
@@ -28,7 +28,7 @@ def compare_categories(node1, node2, categories):
                 match_count += 1
         return match_count
     except:
-        return 1
+        return starting_count
 
 def rank_order(df, rank_column, ascending=False):
     """
