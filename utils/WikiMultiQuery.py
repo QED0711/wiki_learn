@@ -23,6 +23,20 @@ def add_title(resp, pages):
             continue
     return pages
 
+def add_redirects(resp, pages):
+    for article in pages:
+        try:
+            pageid = article['pageid']
+            redirects = [redirect['title'] for redirect in resp['query']['pages'][pageid]['redirects']]
+            if "redirects" in article:
+                article['redirects'] += redirects
+            else:
+                article['redirects'] = redirects
+        except:
+            continue
+    
+    return pages
+
 def add_links(resp, pages):
     for article in pages:
         try:
