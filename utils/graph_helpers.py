@@ -19,6 +19,9 @@ def format_categories(cat_list):
 
 def compare_categories(node1, node2, categories):
     match_count = 1
+    if node1 == node2:
+        return 1
+        
     try:
         for cat in categories[node1].keys():
             if categories[node2].get(cat):
