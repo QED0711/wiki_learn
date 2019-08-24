@@ -155,6 +155,7 @@ def wiki_multi_query(articles, params=None, pages=None):
         pages = page_dicts(resp)
 
     pages = add_title(resp, pages)
+    pages = add_redirects(resp, pages)
     pages = add_links(resp, pages)
     pages = add_linkshere(resp, pages)
     pages = add_categories(resp, pages)
@@ -163,7 +164,7 @@ def wiki_multi_query(articles, params=None, pages=None):
     params = update_continue(resp, params)
 
     # if params still is truthy, then it was updated with a continue
-    # start the process again on the continued work
+    # start the process again on the continued params
     if params:
         return wiki_multi_query(articles, params, pages)
 
@@ -172,7 +173,7 @@ def wiki_multi_query(articles, params=None, pages=None):
 
 
 if __name__ == "__main__":
-    wiki_multi_query(["Random forest", "Decision tree", "Machine learning", "Sonata"])[3]['linkshere']
+    print(wiki_multi_query(["Random forest", "Decision tree", "Machine learning", "Sonata"])[3])
 
 
 
