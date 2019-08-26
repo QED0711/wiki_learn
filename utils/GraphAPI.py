@@ -117,9 +117,9 @@ class GraphCreator:
         for node in self.graph.nodes:
             target_neighbors = list(set(nx.all_neighbors(self.graph, node)))
             shared_neighbors = len(entry_neighbors) + len(target_neighbors) - len(set(entry_neighbors + target_neighbors))
-            # score is neighbors shared over how many possible neighbors could have been shared. 
+            # score is neighbors shared over how many possible unique neighbors could have been shared. 
             shared_neighbors_score[node] = shared_neighbors / len(set(entry_neighbors + target_neighbors))
-            
+
         return sort_dict_values(shared_neighbors_score, ["node", "shared_neighbors_with_entry_score"], "shared_neighbors_with_entry_score", ascending=False)
 
     def get_edges(self):
