@@ -35,7 +35,7 @@ class GraphCreator:
         wis = WikiIntroScrapper(f"https://en.wikipedia.org/wiki/{entry}")
         wis.parse_intro_links()
 
-        self.intro_nodes = wis.intro_link_titles
+        self.intro_nodes = {title : True for title in wis.intro_link_titles}
 
         self.visited = {entry}
         self.next_links = []
@@ -72,7 +72,7 @@ class GraphCreator:
         for edge in self.graph.in_edges:
             weight = compare_categories(edge[0], edge[1], self.categories)
             self.graph.add_edge(edge[0], edge[1], weight=weight)
-    
+
     def get_edge_weights(self):
         edge_weights = []
         for edge in self.graph.edges:
@@ -90,7 +90,20 @@ class GraphCreator:
             cat_matches[node] = compare_categories(self.entry, node, self.categories, starting_count=0)
         return sort_dict_values(cat_matches, ['node', 'category_matches_with_source'], 'category_matches_with_source', ascending=False)
             
+    
+    def get_primary_nodes(self):
+        primary_nodes = {}
+        for node in self.graph.nodes:
+            if node in primary_nodes:
+                # allows for heavier weight to duplicates in intro and see also
+                primary_nodes[node] += 1
             
+            if node in self.intro_nodes:
+                primary_nodes[node] = 1
+            else: 
+                primary_nodes[node] = 0
+        return sort_dict_values(primary_nodes, ["node", "primary_link"], "primary_link", ascending=False)
+
     def get_degrees(self):
         return sort_dict_values(dict(self.graph.degree()), ["node", "degree"], "degree",)
 
@@ -178,22 +191,24 @@ class GraphCreator:
             dfs.append(rank_order(self.get_shared_categories_with_source(), 'category_matches_with_source', ascending=False))
             dfs.append(self.get_edges())
             dfs.append(rank_order(self.get_centrality(), 'centrality', ascending=True))
-            dfs.append(rank_order(self.get_dispersion(), "dispersion", ascending=True))
+            # dfs.append(rank_order(self.get_dispersion(), "dispersion", ascending=True))
             dfs.append(rank_order(self.get_pageranks(), "page_rank", ascending=False))
             dfs.append(rank_order(self.get_adjusted_reciprocity(), "adjusted_reciprocity", ascending=False))
             dfs.append(rank_order(self.get_shortest_path_from_entry(), "shortest_path_length_from_entry", ascending=True))
-            dfs.append(rank_order(self.get_shortes_path_to_entry(), "shortest_path_length_to_entry", ascending=True))
+            dfs.append(rank_order(self.get_shortest_path_to_entry(), "shortest_path_length_to_entry", ascending=True))
+            dfs.append(rank_order(self.get_primary_nodes(), "primary_node", ascending=False))
         
         else:
             dfs.append(self.get_degrees())
             dfs.append(self.get_shared_categories_with_source())
             dfs.append(self.get_edges())
             dfs.append(self.get_centrality())
-            dfs.append(self.get_dispersion())
+            # dfs.append(self.get_dispersion())
             dfs.append(self.get_pageranks())
             dfs.append(self.get_adjusted_reciprocity())
             dfs.append(self.get_shortest_path_from_entry())
             dfs.append(self.get_shortest_path_to_entry())
+            dfs.append(self.get_primary_nodes())
         
         self.features_df = reduce(lambda left, right: pd.merge(left, right, on="node", how="outer"), dfs)
         return self.features_df

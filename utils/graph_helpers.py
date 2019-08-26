@@ -51,12 +51,22 @@ def rank_order(df, rank_column, ascending=False):
 
 def similarity_rank(row):
     """
-    A helper method for use in `apply` to get the similarity rank from the category matches and shortest paths
+    A helper method for use in `apply` to get the similarity rank from similarity bonuses and penalties
+    Bonuses: category_matches_with_source, primary_link
+    Penalties: shortest_path_length_from_source
     """
+    bonus = row.category_matches_with_source + row.primary_link
+    # set penalty to the mean of the path lengths to/from the entry node
+    penalty = np.mean([row.shortest_path_length_from_entry, row.shortest_path_length_to_entry]) 
+    # if penalty is nan, just set it to the highest path length (the greatest penalty)
+    if np.isnan(penalty):
+        penalty = max(row.shortest_path_length_from_entry, row.shortest_path_length_to_entry)
+
     try:
         # similarity is penalized by longer paths
-        sim_score = row.category_matches_with_source / row.shortest_path_length_from_source   
+        sim_score = bonus / penalty   
         # if a path from the source does not exist, it is given a similarity score of 0
         return 0 if np.isnan(sim_score) else sim_score
     except:
+        # in the case that we run into a divide by 0
         return 0
