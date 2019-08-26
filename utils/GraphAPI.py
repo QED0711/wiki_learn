@@ -107,6 +107,21 @@ class GraphCreator:
     def get_degrees(self):
         return sort_dict_values(dict(self.graph.degree()), ["node", "degree"], "degree",)
 
+    def get_shared_neighbors_with_entry_score(self):
+        """
+        A score comprised of the total number of shared neighbors with the target OVER the total number of neighbors
+        of each node 
+        """
+        entry_neighbors = list(set(nx.all_neighbors(self.graph, self.entry)))
+        shared_neighbors_score = {}
+        for node in self.graph.nodes:
+            target_neighbors = list(set(nx.all_neighbors(self.graph, node)))
+            shared_neighbors = len(entry_neighbors) + len(target_neighbors) - len(set(entry_neighbors + target_neighbors))
+            # score is neighbors shared over how many possible neighbors could have been shared. 
+            shared_neighbors_score[node] = shared_neighbors / len(set(entry_neighbors + target_neighbors))
+            
+        return sort_dict_values(shared_neighbors_score, ["node", "shared_neighbors_with_entry_score"], "shared_neighbors_with_entry_score", ascending=False)
+
     def get_edges(self):
         in_edges = sort_dict_values(dict(Counter([edge[1] for edge in self.graph.in_edges()])), 
                             ['node', 'in_edges'], "in_edges")
@@ -189,6 +204,7 @@ class GraphCreator:
         if rank:
             dfs.append(rank_order(self.get_degrees(), 'degree', ascending=False))
             dfs.append(rank_order(self.get_shared_categories_with_source(), 'category_matches_with_source', ascending=False))
+            dfs.append(rank_order(self.get_shared_neighbors_with_entry_score(), 'shared_neighbors_with_entry_score', ascending=False))
             dfs.append(self.get_edges())
             dfs.append(rank_order(self.get_centrality(), 'centrality', ascending=True))
             # dfs.append(rank_order(self.get_dispersion(), "dispersion", ascending=True))
@@ -202,6 +218,7 @@ class GraphCreator:
             dfs.append(self.get_degrees())
             dfs.append(self.get_shared_categories_with_source())
             dfs.append(self.get_edges())
+            dfs.append(self.get_shared_neighbors_with_entry_score())
             dfs.append(self.get_centrality())
             # dfs.append(self.get_dispersion())
             dfs.append(self.get_pageranks())
