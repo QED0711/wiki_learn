@@ -18,7 +18,7 @@ warnings.filterwarnings("ignore")
 
 from wiki_intro_scrapper import WikiIntroScrapper
 from WikiMultiQuery import wiki_multi_query
-from graph_helpers import create_dispersion_df, sort_dict_values, format_categories, compare_categories, rank_order
+from graph_helpers import create_dispersion_df, sort_dict_values, format_categories, compare_categories, rank_order, similarity_rank
 
 
 ################
@@ -187,7 +187,11 @@ class GraphCreator:
             dfs.append(self.get_adjusted_reciprocity())
             dfs.append(self.get_shortes_path())
         
-        return reduce(lambda left, right: pd.merge(left, right, on="node", how="outer"), dfs)
+        self.features_df = reduce(lambda left, right: pd.merge(left, right, on="node", how="outer"), dfs)
+        return self.features_df
+
+    def rank_similarity(self):
+        self.features_df['similarity_rank'] = self.features_df.apply(similarity_rank, axis=1)
         
     
     def create_ego(self, node=None):

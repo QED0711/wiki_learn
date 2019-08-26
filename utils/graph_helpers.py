@@ -1,4 +1,5 @@
 import pdb
+import numpy as np
 import pandas as pd
 import networkx as nx
 
@@ -46,3 +47,16 @@ def rank_order(df, rank_column, ascending=False):
 
     df[f"{rank_column}_ranked"] = rankings
     return df
+
+
+def similarity_rank(row):
+    """
+    A helper method for use in `apply` to get the similarity rank from the category matches and shortest paths
+    """
+    try:
+        # similarity is penalized by longer paths
+        sim_score = row.category_matches_with_source / row.shortest_path_length_from_source   
+        # if a path from the source does not exist, it is given a similarity score of 0
+        return 0 if np.isnan(sim_score) else sim_score
+    except:
+        return 0
