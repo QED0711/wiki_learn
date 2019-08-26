@@ -35,7 +35,7 @@ class GraphCreator:
         wis = WikiIntroScrapper(f"https://en.wikipedia.org/wiki/{entry}")
         wis.parse_intro_links()
 
-        self.intro_nodes = {title : True for title in wis.intro_link_titles}
+        self.primary_nodes = {title : True for title in wis.get_primary_links()}
 
         self.visited = {entry}
         self.next_links = []
@@ -98,7 +98,7 @@ class GraphCreator:
                 # allows for heavier weight to duplicates in intro and see also
                 primary_nodes[node] += 1
             
-            if node in self.intro_nodes:
+            if node in self.primary_nodes:
                 primary_nodes[node] = 1
             else: 
                 primary_nodes[node] = 0

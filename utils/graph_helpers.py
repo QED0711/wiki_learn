@@ -53,7 +53,7 @@ def similarity_rank(row):
     """
     A helper method for use in `apply` to get the similarity rank from similarity bonuses and penalties
     Bonuses: category_matches_with_source, primary_link
-    Penalties: shortest_path_length_from_source
+    Penalties: shortest_path_length_from_entry, shortest_path_length_to_entry
     """
     bonus = row.category_matches_with_source + row.primary_link
     # set penalty to the mean of the path lengths to/from the entry node

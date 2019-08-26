@@ -7,7 +7,7 @@ from copy import copy, deepcopy
 
 from keys import *
 
-from get_related_links import get_related_links
+from get_related_links import get_see_also_links
 import time
 
 class WikiScrapper:
@@ -17,7 +17,7 @@ class WikiScrapper:
     
     
     def traverse_from(self, url, max_depth=3, max_nodes=100):
-        current = get_related_links(url)
+        current = get_see_also_links(url)
         
         
         if current:
@@ -35,7 +35,7 @@ class WikiScrapper:
             for link in queue_copy:
                 try:
                     current_url = queue.pop(0)
-                    current = get_related_links(current_url)
+                    current = get_see_also_links(current_url)
 
                     if current:
                         if seen.get(current['title']):
@@ -93,5 +93,6 @@ class WikiScrapper:
 
 if __name__ == "__main__":
     scrapper = WikiScrapper()
-    scrapper.traverse_from("https://en.wikipedia.org/wiki/Brain", max_depth=3, max_nodes=2)
+    scrapper.traverse_from("https://en.wikipedia.org/wiki/Decision_tree", max_depth=1, max_nodes=2)
+    
     print(scrapper.data)

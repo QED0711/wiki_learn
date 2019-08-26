@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 
 from url_utils import parse_url, get_title
-
+from get_related_links import get_see_also_links
 
 class WikiIntroScrapper:
     
@@ -14,7 +14,17 @@ class WikiIntroScrapper:
         self.intro_links = []
         self.parsed_links = []
         self.intro_link_titles = []
+
+        see_also_links = get_see_also_links(self.url)
+        if see_also_links:
+            self.see_also_link_titles = see_also_links["links"]
+        else:
+            self.see_also_link_titles = []
+        
     
+    def get_primary_links(self):
+        return list(set(self.intro_link_titles + self.see_also_link_titles))
+
     def _get_article(self):
         resp = requests.get(self.url)
         soup = BeautifulSoup(resp.content)
@@ -53,10 +63,11 @@ class WikiIntroScrapper:
 
 
 if __name__ == "__main__":
-    ws = WikiIntroScrapper("https://en.wikipedia.org/wiki/Random_forest")
+    ws = WikiIntroScrapper("https://en.wikipedia.org/wiki/Decision_tree")
 
     ws.parse_intro_links()
 
     print("Title:\t", ws.title)
 
-    print(ws.intro_link_titles)
+    # print(ws.intro_link_titles)
+    print(ws.get_primary_links())
