@@ -134,13 +134,19 @@ class GraphCreator:
         adjusted_reci = r_d.sort_values("adjusted_reciprocity", ascending=False)
         return adjusted_reci.reset_index().drop(["degree", "reciprocity", "index"], axis=1)
     
-    def get_shortes_path(self, source=None, ascending=False):
+    def get_shortest_path_from_entry(self, source=None, ascending=False):
         if not source:
             source = self.entry
             
         paths = nx.algorithms.shortest_paths.weighted.single_source_dijkstra_path_length(self.graph, source, weight="weight")
-        return sort_dict_values(paths, ["node", "shortest_path_length_from_source"], "shortest_path_length_from_source", ascending=ascending)
+        return sort_dict_values(paths, ["node", "shortest_path_length_from_entry"], "shortest_path_length_from_entry", ascending=ascending)
     
+    def get_shortest_path_to_entry(self):
+        path_lengths = nx.algorithms.shortest_paths.shortest_path_length(self.graph, 
+                            target=self.entry, weight="weight")
+
+        return sort_dict_values(path_lengths, ["node", "shortest_path_length_to_entry"], "shortest_path_length_to_entry", ascending=True)
+
     def get_dominator_counts(self, source=None):
         if not source:
             source = self.entry
@@ -175,7 +181,8 @@ class GraphCreator:
             dfs.append(rank_order(self.get_dispersion(), "dispersion", ascending=True))
             dfs.append(rank_order(self.get_pageranks(), "page_rank", ascending=False))
             dfs.append(rank_order(self.get_adjusted_reciprocity(), "adjusted_reciprocity", ascending=False))
-            dfs.append(rank_order(self.get_shortes_path(), "shortest_path_length_from_source", ascending=True))
+            dfs.append(rank_order(self.get_shortest_path_from_entry(), "shortest_path_length_from_entry", ascending=True))
+            dfs.append(rank_order(self.get_shortes_path_to_entry(), "shortest_path_length_to_entry", ascending=True))
         
         else:
             dfs.append(self.get_degrees())
@@ -185,7 +192,8 @@ class GraphCreator:
             dfs.append(self.get_dispersion())
             dfs.append(self.get_pageranks())
             dfs.append(self.get_adjusted_reciprocity())
-            dfs.append(self.get_shortes_path())
+            dfs.append(self.get_shortest_path_from_entry())
+            dfs.append(self.get_shortest_path_to_entry())
         
         self.features_df = reduce(lambda left, right: pd.merge(left, right, on="node", how="outer"), dfs)
         return self.features_df
