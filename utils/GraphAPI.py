@@ -253,8 +253,8 @@ class GraphCreator:
     
     def update_next_links(self, articles):
         for article in articles:
-            for link in article['links']:
-                self.next_links.append(link)
+            out_in = article['links'] + article['linkshere']
+            self.next_links += out_in
 
     def query_articles(self, titles, generate_graph=True):
         articles = wiki_multi_query(titles)
