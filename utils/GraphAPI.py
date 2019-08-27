@@ -9,6 +9,8 @@ import pandas as pd
 from functools import reduce
 from collections import Counter
 
+from sklearn.preprocessing import normalize
+
 import networkx as nx
 
 import signal
@@ -163,6 +165,7 @@ class GraphCreator:
         r_d['adjusted_reciprocity'] = r_d.reciprocity * r_d.degree
 
         adjusted_reci = r_d.sort_values("adjusted_reciprocity", ascending=False)
+        adjusted_reci.adjusted_reciprocity = normalize([adjusted_reci.adjusted_reciprocity])[0]
         return adjusted_reci.reset_index().drop(["degree", "reciprocity", "index"], axis=1)
     
     def get_shortest_path_from_entry(self, source=None, ascending=False):
@@ -250,7 +253,12 @@ class GraphCreator:
         return self.features_df
 
     def rank_similarity(self):
-        self.features_df['similarity_rank'] = self.features_df.apply(similarity_rank, axis=1)
+        degree_mean = np.mean(self.features_df.degree.unique())
+
+        self.features_df['similarity_rank'] = self.features_df.apply(
+                                                    similarity_rank, 
+                                                    degree_mean=degree_mean,
+                                                    axis=1)
         
     
     def create_ego(self, node=None):

@@ -49,18 +49,23 @@ def rank_order(df, rank_column, ascending=False):
     return df
 
 
-def similarity_rank(row):
+def similarity_rank(row, **kwargs):
     """
     A helper method for use in `apply` to get the similarity rank from similarity bonuses and penalties
     Bonuses: category_matches_with_source, primary_link, shared_neighbors_with_entry_score
     Penalties: shortest_path_length_from_entry, shortest_path_length_to_entry
     """
-    bonus = row.category_matches_with_source + row.primary_link + row.shared_neighbors_with_entry_score
+    # degree_z_score = (row.degree - kwargs['degree_mean']) / kwargs['degree_std']
+
+    bonus = row.category_matches_with_source + row.shared_neighbors_with_entry_score + row.primary_link + row.centrality + row.page_rank + row.adjusted_reciprocity
     # set penalty to the mean of the path lengths to/from the entry node
-    penalty = np.mean([row.shortest_path_length_from_entry, row.shortest_path_length_to_entry]) 
+    penalty = np.mean([row.shortest_path_length_from_entry, row.shortest_path_length_to_entry])
     # if penalty is nan, just set it to the highest path length (the greatest penalty)
     if np.isnan(penalty):
-        penalty = max(row.shortest_path_length_from_entry, row.shortest_path_length_to_entry)
+        penalty = max(row.shortest_path_length_from_entry, row.shortest_path_length_to_entry) 
+
+    # add any other penalty terms
+    penalty += (row.degree / kwargs['degree_mean'])
 
     try:
         # similarity is penalized by longer paths
