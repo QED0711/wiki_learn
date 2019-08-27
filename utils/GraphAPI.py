@@ -178,6 +178,20 @@ class GraphCreator:
 
         return sort_dict_values(path_lengths, ["node", "shortest_path_length_to_entry"], "shortest_path_length_to_entry", ascending=True)
 
+    def get_jaccard_similarity(self):
+        entry_in_edges = set([x[0] for x in self.graph.in_edges(nbunch=self.entry)])
+        jaccard_scores = {}
+        for node in self.graph.nodes:
+            target_in_edges = set([x[0] for x in self.graph.in_edges(nbunch=node)])
+            in_edge_intersect = len(entry_in_edges.intersection(target_in_edges))
+            in_edge_union = len(entry_in_edges.union(target_in_edges))
+            
+            jaccard_scores[node] = in_edge_intersect / in_edge_union
+
+
+        return sort_dict_values(jaccard_scores, ["node", "jaccard_similarity"], "jaccard_similarity", ascending=False)
+
+
     def get_dominator_counts(self, source=None):
         if not source:
             source = self.entry
@@ -196,7 +210,7 @@ class GraphCreator:
                 dom_counts[node] = 0
         
         return sort_dict_values(dom_counts, ['node', 'immediate_dominator_count'], 'immediate_dominator_count')
-    
+
     def get_hits(self):
         hits = nx.algorithms.link_analysis.hits_alg.hits(self.graph, max_iter=1000)
         return (sort_dict_values(hits[1], ['node', 'hits_authority'], 'hits_authority')
@@ -215,6 +229,7 @@ class GraphCreator:
             dfs.append(rank_order(self.get_adjusted_reciprocity(), "adjusted_reciprocity", ascending=False))
             dfs.append(rank_order(self.get_shortest_path_from_entry(), "shortest_path_length_from_entry", ascending=True))
             dfs.append(rank_order(self.get_shortest_path_to_entry(), "shortest_path_length_to_entry", ascending=True))
+            dfs.append(rank_order(self.get_jaccard_similarity(), "jaccard_similarity", ascending=False))
             dfs.append(rank_order(self.get_primary_nodes(), "primary_node", ascending=False))
         
         else:
@@ -228,6 +243,7 @@ class GraphCreator:
             dfs.append(self.get_adjusted_reciprocity())
             dfs.append(self.get_shortest_path_from_entry())
             dfs.append(self.get_shortest_path_to_entry())
+            dfs.append(self.get_jaccard_similarity())
             dfs.append(self.get_primary_nodes())
         
         self.features_df = reduce(lambda left, right: pd.merge(left, right, on="node", how="outer"), dfs)
