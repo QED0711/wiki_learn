@@ -16,7 +16,7 @@ import signal
 import warnings
 warnings.filterwarnings("ignore")
 
-from wiki_intro_scrapper import WikiIntroScrapper
+from wiki_scrapper import WikiScrapper
 from WikiMultiQuery import wiki_multi_query
 from graph_helpers import create_dispersion_df, sort_dict_values, format_categories, compare_categories, rank_order, similarity_rank
 
@@ -32,10 +32,13 @@ class GraphCreator:
 
         self.entry = entry
 
-        wis = WikiIntroScrapper(f"https://en.wikipedia.org/wiki/{entry}")
-        wis.parse_intro_links()
+        ws = WikiScrapper(f"https://en.wikipedia.org/wiki/{entry}")
+        ws.parse_intro_links()
 
-        self.primary_nodes = {title : True for title in wis.get_primary_links()}
+        self.primary_nodes = {title : True for title in ws.get_primary_links()}
+
+        # see also articles to be used as targets for evaluation
+        self.see_also_articles = ws.see_also_link_titles
 
         self.visited = {entry}
         self.next_links = []

@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 from url_utils import parse_url, get_title
 from get_related_links import get_see_also_links
 
-class WikiIntroScrapper:
+class WikiScrapper:
     
     def __init__(self, url):
         self.url = url
@@ -63,7 +63,7 @@ class WikiIntroScrapper:
 
 
 if __name__ == "__main__":
-    ws = WikiIntroScrapper("https://en.wikipedia.org/wiki/Decision_tree")
+    ws = WikiScrapper("https://en.wikipedia.org/wiki/Decision_tree")
 
     ws.parse_intro_links()
 
