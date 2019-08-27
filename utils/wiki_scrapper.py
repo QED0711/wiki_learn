@@ -22,8 +22,19 @@ class WikiScrapper:
             self.see_also_link_titles = []
         
     
-    def get_primary_links(self):
-        return list(set(self.intro_link_titles + self.see_also_link_titles))
+    def get_primary_links(self, include_see_also=True):
+        """
+        Returns scrapped links from the intro text and see also section. 
+        
+        Optional: If include_see_also is set to False, the see_also_link_titles will not
+        be included in the result. This may be desirable if you want to evaluate the performance
+        of the recomendation metric by seeing how many of the see also links it was able to pull out
+        without prior knowledge of their existance. 
+        """
+        if include_see_also:
+            return list(set(self.intro_link_titles + self.see_also_link_titles))
+        else: 
+            return list(set(self.intro_link_titles))
 
     def _get_article(self):
         resp = requests.get(self.url)

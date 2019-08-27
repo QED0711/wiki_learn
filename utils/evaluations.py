@@ -15,6 +15,13 @@ def score_at_percentage(alpha, df, targets):
     
     return targets_seen
 
+def valid_targets(df, targets):
+    validated = []
+    for target in targets:
+        if df[df.node == target].shape[0] > 0: # if target is in our dataframe
+            validated.append(target)
+    return validated
+
 
 def evaluate_recommendations(df, on, targets):
     """
@@ -31,7 +38,10 @@ def evaluate_recommendations(df, on, targets):
 
     return
     ------
+    Returns a datafram report containing the score, the max score, and percentage points at which targets
+    were found in the top recommendations.
     """
+    # target = valid_targets(df, targets)
     sorted_df = df.sort_values(on, ascending=False).reset_index().drop("index", axis=1) 
     total_nodes = sorted_df.shape[0]
 
@@ -50,14 +60,22 @@ def evaluate_recommendations(df, on, targets):
     score = 1 - (max_target_index / (total_nodes - len(targets)))
     max_score_possible = 1 - (len(targets) / total_nodes)
     report = pd.DataFrame([
-        {"description": "score", "value": score},
-        {"description": "% targets in top 1%", "value": (score_at_percentage(0.01, sorted_df, targets) / len(targets))},
-        {"description": "% targets in top 5%", "value": (score_at_percentage(0.05, sorted_df, targets) / len(targets))},
-        {"description": "% targets in top 10%", "value": (score_at_percentage(0.10, sorted_df, targets) / len(targets))},
-        {"description": "% targets in top 20%", "value": (score_at_percentage(0.20, sorted_df, targets) / len(targets))},
-        {"description": "max score posible", "value": max_score_possible},
-        {"description": "difference", "value": max_score_possible - score},
-        {"description": "total targets", "value": len(targets)},
-    ]).set_index("description")
+        {"Metric Score": "score", on: score},
+        {"Metric Score": "max score possible", on: max_score_possible},
+        {"Metric Score": "difference", on: max_score_possible - score},
+        {"Metric Score": "total targets", on: len(targets)},
+        {"Metric Score": "% targets in top 1%", on: (score_at_percentage(0.01, sorted_df, targets) / len(targets))},
+        {"Metric Score": "% targets in top 5%", on: (score_at_percentage(0.05, sorted_df, targets) / len(targets))},
+        {"Metric Score": "% targets in top 10%", on: (score_at_percentage(0.10, sorted_df, targets) / len(targets))},
+        {"Metric Score": "% targets in top 20%", on: (score_at_percentage(0.20, sorted_df, targets) / len(targets))},
+    ]).set_index("Metric Score")
 
-    return report
+    return report.T
+
+def evaluate_metrics(df, on, targets):
+    validated_targets = valid_targets(df, targets)
+    dfs = []
+    for metric in on: 
+        dfs.append(evaluate_recommendations(df, metric, validated_targets))
+
+    return pd.concat(dfs)

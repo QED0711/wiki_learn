@@ -27,7 +27,7 @@ from graph_helpers import create_dispersion_df, sort_dict_values, format_categor
 
 class GraphCreator:
 
-    def __init__(self, entry):
+    def __init__(self, entry, include_see_also=True):
         self.graph = nx.DiGraph()
 
         self.entry = entry
@@ -35,7 +35,7 @@ class GraphCreator:
         ws = WikiScrapper(f"https://en.wikipedia.org/wiki/{entry}")
         ws.parse_intro_links()
 
-        self.primary_nodes = {title : True for title in ws.get_primary_links()}
+        self.primary_nodes = {title : True for title in ws.get_primary_links(include_see_also=include_see_also)}
 
         # see also articles to be used as targets for evaluation
         self.see_also_articles = ws.see_also_link_titles
