@@ -9,7 +9,7 @@ import pandas as pd
 from functools import reduce
 from collections import Counter
 
-from sklearn.preprocessing import normalize
+from sklearn.preprocessing import normalize, StandardScaler, Normalizer, RobustScaler, MinMaxScaler, MaxAbsScaler
 
 import networkx as nx
 
@@ -259,8 +259,26 @@ class GraphCreator:
                                                     similarity_rank, 
                                                     degree_mean=degree_mean,
                                                     axis=1)
-        
     
+    def scale_features_df(self, scaler=StandardScaler, copy=True):
+        nodes = self.features_df.node
+
+        node_removed = self.features_df.drop("node", axis=1)
+        columns = node_removed.columns 
+
+        scaled_features = scaler().fit_transform(node_removed)
+
+        scaled_features = pd.DataFrame(scaled_features, columns=columns)
+
+        scaled_features.insert(0, "node", nodes)
+        
+        if not copy: # if copy=False, then we overwrite existing features_df with the scaled version
+            self.features_df = scaled_features
+            return self.features_df
+        else:
+            return scaled_features
+
+
     def create_ego(self, node=None):
         if not node:
             node = self.entry
