@@ -128,12 +128,13 @@ class GraphCreator:
         return sort_dict_values(shared_neighbors_score, ["node", "shared_neighbors_with_entry_score"], "shared_neighbors_with_entry_score", ascending=False)
 
     def get_edges(self):
-        in_edges = sort_dict_values(dict(Counter([edge[1] for edge in self.graph.in_edges()])), 
-                            ['node', 'in_edges'], "in_edges")
-        out_edges = sort_dict_values(dict(Counter([edge[0] for edge in self.graph.out_edges()])), 
-                            ["node", 'out_edges'], 'out_edges')
-
-        return in_edges.merge(out_edges, on="node")
+        edges = []
+        for node in self.graph.nodes:
+            node_in_edges = len(self.graph.in_edges(node))
+            node_out_edges = len(self.graph.out_edges(node))
+            edges.append({"node": node, "in_edges": node_in_edges, "out_edges": node_out_edges})
+            
+        return pd.DataFrame(edges)
     
     def get_centrality(self):
         return sort_dict_values(nx.eigenvector_centrality(self.graph, weight="weight"), ["node", "centrality"], "centrality")
