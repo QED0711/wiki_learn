@@ -139,7 +139,7 @@ class GraphCreator:
     def get_centrality(self):
         return sort_dict_values(nx.eigenvector_centrality(self.graph, weight="weight"), ["node", "centrality"], "centrality")
 
-    def get_dispersion(self, comparison_node=None, max_nodes=25_000):
+    def get_dispersion(self, comparison_node=None, max_nodes=25_000): # depreciated
         if not comparison_node:
             comparison_node = self.entry
             
@@ -169,18 +169,31 @@ class GraphCreator:
         adjusted_reci.adjusted_reciprocity = normalize([adjusted_reci.adjusted_reciprocity])[0]
         return adjusted_reci.reset_index().drop(["degree", "reciprocity", "index"], axis=1)
     
-    def get_shortest_path_from_entry(self, source=None, ascending=False):
-        if not source:
-            source = self.entry
-            
-        paths = nx.algorithms.shortest_paths.weighted.single_source_dijkstra_path_length(self.graph, source, weight="weight")
-        return sort_dict_values(paths, ["node", "shortest_path_length_from_entry"], "shortest_path_length_from_entry", ascending=ascending)
-    
-    def get_shortest_path_to_entry(self):
-        path_lengths = nx.algorithms.shortest_paths.shortest_path_length(self.graph, 
-                            target=self.entry, weight="weight")
+    def get_shortest_path_from_entry(self):
+        paths = []
+        for node in self.graph.nodes:
+            try:
+                path_length = nx.shortest_path_length(self.graph, source=self.entry, target=node) 
+                paths.append({"node": node, "shortest_path_length_from_entry": path_length})
+            except:
+                paths.append({"node": node, "shortest_path_length_from_entry": np.nan})
+                
 
-        return sort_dict_values(path_lengths, ["node", "shortest_path_length_to_entry"], "shortest_path_length_to_entry", ascending=True)
+        from_entry = pd.DataFrame(paths).sort_values("shortest_path_length_from_entry", ascending=False)
+        return from_entry.fillna(np.max(from_entry.shortest_path_length_from_entry) + 1)  
+
+    def get_shortest_path_to_entry(self):
+        paths = []
+        for node in self.graph.nodes:
+            try:
+                path_length = nx.shortest_path_length(self.graph, source=node, target=self.entry) 
+                paths.append({"node": node, "shortest_path_length_to_entry": path_length})
+            except:
+                paths.append({"node": node, "shortest_path_length_to_entry": np.nan})
+                
+
+        to_entry = pd.DataFrame(paths)
+        return to_entry.fillna(np.max(to_entry.shortest_path_length_to_entry) + 1)
 
     def get_jaccard_similarity(self):
         entry_in_edges = set([x[0] for x in self.graph.in_edges(nbunch=self.entry)])
