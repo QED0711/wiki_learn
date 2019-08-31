@@ -85,8 +85,15 @@ class GraphCreator:
 
         signal.signal(signal.SIGALRM, handle_alarm)
 
-    def add_edges(self, articles):
+    ######################################
+    # GRAPH SETUP & MAINTAINANCE METHODS #
+    ######################################
 
+    def _add_edges(self, articles):
+        """
+        Given a list of articles, adds nodes and connections (edges) to the network.
+        It can be called manually, but the expected use is within an internal graph update call. 
+        """
         for article in articles:          
             self.categories[article['title']] = format_categories([category.split("Category:")[1] for category in article['categories'] if not bool(re.findall(r"(articles)|(uses)|(commons)|(category\:use)", category, re.I))])
             
@@ -96,6 +103,9 @@ class GraphCreator:
                 [(linkhere, article['title']) for linkhere in article['linkshere']])
 
     def update_edge_weights(self):
+        """
+        Edges are weighted by the number of categories two connect nodes share. This method will look at each node and its neighbors and adjust in and outbound edge weights as needed. 
+        """
         for edge in self.graph.out_edges:
             weight = compare_categories(edge[0], edge[1], self.categories)
             self.graph.add_edge(edge[0], edge[1], weight=weight)
@@ -105,15 +115,18 @@ class GraphCreator:
             self.graph.add_edge(edge[0], edge[1], weight=weight)
 
     def get_edge_weights(self):
+        """
+        A getter method to view the edge weights of each node (in and outbound).
+        """
         edge_weights = []
         for edge in self.graph.edges:
             edge_weights.append((edge[0], edge[1], self.graph.get_edge_data(edge[0], edge[1])['weight']))
         
         return pd.DataFrame(edge_weights, columns=["source_node", "target_node", "edge_weight"]).sort_values("edge_weight", ascending=False).reset_index().drop("index", axis=1)
-    
-    def plot_graph(self):
-        nx.draw(self.graph)
-        plt.show()
+
+    ##############################
+    # FEATURE EXTRACTION METHODS #
+    ##############################
 
     def get_shared_categories_with_source(self):
         cat_matches = {}
@@ -123,6 +136,9 @@ class GraphCreator:
             
     
     def get_primary_nodes(self):
+        """
+        Marks a node as a primary node if it appears in the article introduction or the See Also section. Primary nodes are considered to be more related to the main topics than others. 
+        """
         primary_nodes = {}
         for node in self.graph.nodes:
             if node in primary_nodes:
@@ -136,6 +152,9 @@ class GraphCreator:
         return sort_dict_values(primary_nodes, ["node", "primary_link"], "primary_link", ascending=False)
 
     def get_degrees(self):
+        """
+        Get all edges of a node and its neighbors (both in and outbound).
+        """
         return sort_dict_values(dict(self.graph.degree()), ["node", "degree"], "degree",)
 
     def get_shared_neighbors_with_entry_score(self):
@@ -154,6 +173,9 @@ class GraphCreator:
         return sort_dict_values(shared_neighbors_score, ["node", "shared_neighbors_with_entry_score"], "shared_neighbors_with_entry_score", ascending=False)
 
     def get_edges(self):
+        """
+        Gets the in and outbound edges of each node separately. Different from `get_degrees` as it return two columns with in and outbound edges separated.
+        """
         edges = []
         for node in self.graph.nodes:
             node_in_edges = len(self.graph.in_edges(node))
@@ -163,9 +185,15 @@ class GraphCreator:
         return pd.DataFrame(edges)
     
     def get_centrality(self):
+        """
+        Gets the eigenvector centrality of each node.
+        """
         return sort_dict_values(nx.eigenvector_centrality(self.graph, weight="weight"), ["node", "centrality"], "centrality")
 
     def get_dispersion(self, comparison_node=None, max_nodes=25_000): # depreciated
+        """
+        Gets the dispersion of the central node compared to each other node. This is depreciated, and not included in features_df because it can take a long time to calculate.
+        """
         if not comparison_node:
             comparison_node = self.entry
             
@@ -177,14 +205,24 @@ class GraphCreator:
             return sort_dict_values(nx.dispersion(ego, u=comparison_node), ['node', 'dispersion'], 'dispersion')
 
     def get_pageranks(self):
+        """
+        Calculates and returns the networkx pagerank for each node. 
+        """
+
         page_ranks = sorted([(key, value) for key, value in nx.algorithms.link_analysis.pagerank(
             self.graph, weight='weight').items()], key=lambda x: x[1], reverse=True)
         return pd.DataFrame(page_ranks, columns=["node", "page_rank"])
 
     def get_reciprocity(self):
+        """
+        Gets the reciprocity score for each node. Note: Reciprocity in the context or Wikipedia articles can be a misleading metric. The intended use of this method is to be called in the `get_adjusted_reciprocity` method, which accounts for how many connects a node has.
+        """
         return sort_dict_values(nx.algorithms.reciprocity(self.graph, self.graph.nodes), ['node', 'reciprocity'], 'reciprocity')
 
     def get_adjusted_reciprocity(self):
+        """
+        Gets the adjusted reciprocity score for each node. Adjusted reciprocity accounts for how many edges a node has (vs reciprocity, which just sees how many outbount edges are returned). 
+        """
         r = self.get_reciprocity()
         d = self.get_degrees()
 
@@ -196,6 +234,9 @@ class GraphCreator:
         return adjusted_reci.reset_index().drop(["degree", "reciprocity", "index"], axis=1)
     
     def get_shortest_path_from_entry(self):
+        """
+        Calculates the shortest path length from the entry node to every other node. If a path does not exist, return the longest path length from the entry + 1.
+        """
         paths = []
         for node in self.graph.nodes:
             try:
@@ -209,6 +250,9 @@ class GraphCreator:
         return from_entry.fillna(np.max(from_entry.shortest_path_length_from_entry) + 1)  
 
     def get_shortest_path_to_entry(self):
+        """
+        Calculates the shortest path length from each node to the entry node. If a path does not exist, return the longest path length from the entry + 1.
+        """
         paths = []
         for node in self.graph.nodes:
             try:
@@ -222,6 +266,9 @@ class GraphCreator:
         return to_entry.fillna(np.max(to_entry.shortest_path_length_to_entry) + 1)
 
     def get_jaccard_similarity(self):
+        """
+        Calculates the Jaccard similarity score for each node compared to the entry node. 
+        """
         entry_in_edges = set([x[0] for x in self.graph.in_edges(nbunch=self.entry)])
         jaccard_scores = {}
         for node in self.graph.nodes:
@@ -235,7 +282,10 @@ class GraphCreator:
         return sort_dict_values(jaccard_scores, ["node", "jaccard_similarity"], "jaccard_similarity", ascending=False)
 
 
-    def get_dominator_counts(self, source=None):
+    def get_dominator_counts(self, source=None): 
+        """
+        Gets local dominator score for each node. Not included infeatures_df because it can take some time to calculate. 
+        """
         if not source:
             source = self.entry
             
@@ -255,11 +305,22 @@ class GraphCreator:
         return sort_dict_values(dom_counts, ['node', 'immediate_dominator_count'], 'immediate_dominator_count')
 
     def get_hits(self):
+        """
+        Gets the authority and hub scores for each node. Not included in features_df because it can take some time to calculate. 
+        """
         hits = nx.algorithms.link_analysis.hits_alg.hits(self.graph, max_iter=1000)
         return (sort_dict_values(hits[1], ['node', 'hits_authority'], 'hits_authority')
                 .merge(sort_dict_values(hits[0], ['node', 'hits_hub'], 'hits_hub'), on="node"))
     
     def get_features_df(self, rank=False):
+        """
+        A wrapper method for several of the other getter methods. It calls each getter method and combines the results into a pandas DataFrame.
+
+        Input:
+        ------
+        rank (default: False, bool)
+        When True, ranks each column individually, and creates an additional column of the average ranking for each row. Default is no no average ranking. In this context, rank is not necessarily associated with the entry node, but the network structure itself.
+        """
         dfs = []
         if rank:
             dfs.append(rank_order(self.get_degrees(), 'degree', ascending=False))
@@ -293,6 +354,9 @@ class GraphCreator:
         return self.features_df
 
     def rank_similarity(self):
+        """
+        Calculates a cumulative similarity rank for each node compared to the entry node. Features are placed into bonus and penalty categories to determine how similar and favorable each node is to the entry node. 
+        """
         degree_mean = np.mean(self.features_df.degree.unique())
 
         self.features_df['similarity_rank'] = self.features_df.apply(
@@ -301,6 +365,18 @@ class GraphCreator:
                                                     axis=1)
     
     def scale_features_df(self, scaler=StandardScaler, copy=True):
+        """
+        A method to scale the values in the features_df using a sklearn scaler. 
+
+        Input:
+        ------
+
+        scaler (default: StandardScaler, sklearn scaler)
+        An sklearn scaler that will be fit to the numerical data of the features_df
+
+        copy (default: True, bool)
+        Whether or not to make a copy of the features_df. When False, overwrites the existing features_df in the class instance with the scaled version.
+        """
         nodes = self.features_df.node
 
         node_removed = self.features_df.drop("node", axis=1)
@@ -320,6 +396,15 @@ class GraphCreator:
 
 
     def create_ego(self, node=None):
+        """
+        Extracts the Ego network of the target node.
+
+        Input:
+        ------
+
+        node (default: None, network node or None)
+        If None, defaults to the entry node. Will raise and error if the specified node (string) is not in the network. 
+        """
         if not node:
             node = self.entry
 
@@ -327,7 +412,20 @@ class GraphCreator:
         ego.name = node
         return ego
 
+    #############
+    # API CALLS #
+    #############
+
     def _next_link_chunks(self, chunk_size=2):
+        """
+        Determines how many articles should be queried in a single API call.
+
+        Input:
+        ------
+
+        chunk_size (default: 2, int)
+        How many areticles to go into a single API call. Max is 50 (determined by Wikipedia API limits). 
+        """
         chunked = []
         current_chunk = []
         for i, node in enumerate(self.graph.nodes):
@@ -341,7 +439,21 @@ class GraphCreator:
 
 
     def expand_network(self, group_size=10, timeout=10, log_progress=False):
+        """
+        Traverses each non traversed node in the network and expands it to include those links. Note: this is a single threaded version of expand_network. See expand_network_threaded for a more performant version.
 
+        Input:
+        ------
+
+        group_size (default: 10, int)
+        How many articles to include in single API call (Max 50)
+
+        timout (default: 10, int)
+        The maximum amount of time in seconds to allow a single API call to run. Once this timeperiod has passed, it will not return the node information. 
+
+        log_progress (default: False, bool)
+        Whether or not to prit progress percent to the screen.
+        """
         num_links = len(self.next_links)
 
         link_group = []
@@ -401,6 +513,9 @@ class GraphCreator:
 
 
     def update_redirects(self, articles):
+        """
+        Given a list of articles, takes any redirects to that article and matches the edges to other nodes accordingly. Note: not to be called manually. 
+        """
         for article in articles:
             if article.get("redirects"):
                 self.redirect_targets.append(article["title"])
@@ -408,6 +523,9 @@ class GraphCreator:
                     self.redirect_sources[redirect] = len(self.redirect_targets) - 1
     
     def redraw_redirects(self):
+        """
+        To be called only once the network has been expanded to the desired layers. Ensures that there are no redirects left in the network, and that all old redirects link to the correct node. 
+        """
         edges = list(self.graph.edges) # need this copy so 'edges' doesn't change size on iteration
         for edge in edges:
             if edge[0] in self.redirect_sources:
@@ -419,23 +537,32 @@ class GraphCreator:
         self.remove_redirect_nodes()
     
     def remove_redirect_nodes(self):
+        """
+        Removes any nodes marked as redirects. Not to be called manually. Called automatically in redraw_redirects. 
+        """
         nodes = list(self.graph.nodes) # need this copy so 'nodes' doesn't change size on iteration
         for node in nodes:
             if node in self.redirect_sources:
                 self.graph.remove_node(node)
     
     def update_next_links(self, articles):
+        """
+        Appends newly discovered nodes to the next_links queue. Not to be called manually. 
+        """
         for article in articles:
             out_in = article['links'] + article['linkshere']
             self.next_links += out_in
 
     def query_articles(self, titles, generate_graph=True):
+        """
+        The main API call method. Not to be called manually. Will be automatically called on initialization and any time the network is expanded. 
+        """
         articles = wiki_multi_query(titles, max_requests=self.max_requests)
         
         self.update_redirects(articles)
         
         self.update_next_links(articles)
-        self.add_edges(articles)
+        self._add_edges(articles)
 
 
 if __name__ == "__main__":
