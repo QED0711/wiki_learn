@@ -328,15 +328,19 @@ class GraphCreator:
                         continue
         signal.alarm(0)
 
-    def expand_network_th(self, timeout=10):
+    def expand_network_th(self, threads=10, timeout=10):
+        """
+        A wrapper method that handles multithreaded network expansion.
+        The primary purpose is to call the `tun_threaded_expansion` method 
+        """
         try:
-            signal.alarm(timeout)
-            self.run_threaded_expansion()
+            signal.alarm(timeout) # the amount of time we allow for the process to finish
+            self.run_threaded_expansion(threads=threads)
         except:
             signal.alarm(0)
             return
 
-    def run_threaded_expansion(self, threads=10, timeout=None):
+    def run_threaded_expansion(self, threads=10):
         """
         A multithreaded implementation of the .expand_network() method.
         """
@@ -362,13 +366,10 @@ class GraphCreator:
         while True:
             current_node = self.node_queue.get()
             try:
-                # signal.alarm(10) 
                 self.query_articles([current_node])
                 self.node_queue.task_done()
-                # signal.alarm(0)
             except:
                 continue
-                # signal.alarm(0)
 
 
     def update_redirects(self, articles):
@@ -410,7 +411,8 @@ class GraphCreator:
 
 
 if __name__ == "__main__":
-    gc = GraphCreator("Decision tree")
+    gc = GraphCreator("Prevention science")
+    print(len(gc.graph.nodes))
     # gc.expand_network(group_size=2, timeout=5, log_progress=True)
     gc.expand_network_th()
     print(len(gc.graph.nodes))
