@@ -34,12 +34,31 @@ from graph_helpers import create_dispersion_df, sort_dict_values, format_categor
 
 class GraphCreator:
 
-    def __init__(self, entry, include_see_also=True, max_recursize_requests=50):
+    """
+    Retrieves data from the Wikipedia API and constructs a graph network of article relations.
+    Allows for the fast creation of a graph based recommender system. 
+
+    Input:
+    ------
+
+    entry (required, string)
+    A string containing the title of a Wikipedia article or a valid Wikipedia URL.
+
+    include_see_also (defaul: True, bool)
+    If True, marks any see also links as important and related to the main topic (default).
+    If False, does nothing to the see also links. Mark as False if validating recommendations
+
+    max_recursive_requests (default: 50, int)
+    The maximum number of times an API call will repeat to get all information. This can be an important parameter to set if efficiency is an issue. 
+    Lower values will be more efficient, but may miss important information. Higher values are less efficient, but gather more data. 
+    """
+
+    def __init__(self, entry, include_see_also=True, max_recursive_requests=50):
         self.graph = nx.DiGraph()
 
         self.entry = get_title(entry) # from url_utils
 
-        self.max_requests = max_recursize_requests
+        self.max_requests = max_recursive_requests
 
         ws = WikiScrapper(f"https://en.wikipedia.org/wiki/{self.entry}")
         ws.parse_intro_links()
