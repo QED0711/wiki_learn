@@ -3,11 +3,13 @@ import seaborn as sns
 import pdb
 import requests
 import re
+import threading
 
 import numpy as np
 import pandas as pd
 from functools import reduce
 from collections import Counter
+from queue import Queue
 
 from sklearn.preprocessing import normalize, StandardScaler, Normalizer, RobustScaler, MinMaxScaler, MaxAbsScaler
 
@@ -326,6 +328,49 @@ class GraphCreator:
                         continue
         signal.alarm(0)
 
+    def expand_network_th(self, timeout=10):
+        try:
+            signal.alarm(timeout)
+            self.run_threaded_expansion()
+        except:
+            signal.alarm(0)
+            return
+
+    def run_threaded_expansion(self, threads=10, timeout=None):
+        """
+        A multithreaded implementation of the .expand_network() method.
+        """
+        print("called")
+        # initialize our queue
+        self.node_queue = Queue()
+
+        # initialize threading daemon
+        for i in range(threads):
+            t = threading.Thread(target=self.process_queue_th)
+            t.daemon = True
+            t.start()
+
+        # iterate through nodes and add to queue (and visited)
+        for node in self.graph.nodes:
+            if not node in self.visited:
+                self.node_queue.put(node)
+                self.visited.update(node)
+                
+        self.node_queue.join()
+
+    def process_queue_th(self):
+        while True:
+            current_node = self.node_queue.get()
+            try:
+                # signal.alarm(10) 
+                self.query_articles([current_node])
+                self.node_queue.task_done()
+                # signal.alarm(0)
+            except:
+                continue
+                # signal.alarm(0)
+
+
     def update_redirects(self, articles):
         for article in articles:
             if article.get("redirects"):
@@ -366,5 +411,6 @@ class GraphCreator:
 
 if __name__ == "__main__":
     gc = GraphCreator("Decision tree")
-    gc.expand_network(group_size=2, timeout=5, log_progress=True)
+    # gc.expand_network(group_size=2, timeout=5, log_progress=True)
+    gc.expand_network_th()
     print(len(gc.graph.nodes))
