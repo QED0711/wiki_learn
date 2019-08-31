@@ -33,10 +33,12 @@ from graph_helpers import create_dispersion_df, sort_dict_values, format_categor
 
 class GraphCreator:
 
-    def __init__(self, entry, include_see_also=True):
+    def __init__(self, entry, include_see_also=True, max_recursize_requests=50):
         self.graph = nx.DiGraph()
 
         self.entry = entry
+
+        self.max_requests = max_recursize_requests
 
         ws = WikiScrapper(f"https://en.wikipedia.org/wiki/{entry}")
         ws.parse_intro_links()
@@ -64,8 +66,8 @@ class GraphCreator:
         signal.signal(signal.SIGALRM, handle_alarm)
 
     def add_edges(self, articles):
-        for article in articles:
-            
+
+        for article in articles:          
             self.categories[article['title']] = format_categories([category.split("Category:")[1] for category in article['categories'] if not bool(re.findall(r"(articles)|(uses)|(commons)|(category\:use)", category, re.I))])
             
             self.graph.add_edges_from(
@@ -305,6 +307,19 @@ class GraphCreator:
         ego.name = node
         return ego
 
+    def _next_link_chunks(self, chunk_size=2):
+        chunked = []
+        current_chunk = []
+        for i, node in enumerate(self.graph.nodes):
+            if not node in self.visited:
+                current_chunk.append(node)
+                self.visited.update([node])
+            if len(current_chunk) == chunk_size or (i == len(self.graph.nodes) - 1 and len(current_chunk) > 0):
+                chunked.append(current_chunk)
+                current_chunk = []
+        return chunked
+
+
     def expand_network(self, group_size=10, timeout=10, log_progress=False):
 
         num_links = len(self.next_links)
@@ -330,24 +345,38 @@ class GraphCreator:
                         continue
         signal.alarm(0)
 
-    def expand_network_threaded(self, threads=10):
+    def expand_network_threaded(self, threads=10, chunk_size=5):
         """
         A wrapper method that handles multithreaded network expansion.
-        The primary purpose is to call the `_run_threaded_expansion` method 
-        """
-        with concurrent.futures.ThreadPoolExecutor(max_workers=threads) as executor:
-            executor.map(self._run_threaded_expansion, self.next_links)
+        The primary purpose is to call the `_run_threaded_expansion` method.
 
-    def _run_threaded_expansion(self, node):
+        This method can be substantially more performant than the non threaded `expand_network` method. 
+        The trade off is that you need to be careful about API rate limits, as this can easily exceed them. 
+        It is best to set the `threads` parameter to a reasonable number (2-20) so as to avoide rate limit issues. 
+
+        Input:
+        ------
+
+        threads (default: 10)
+        the number of concurrent threads to run.
+
+        chunk_size (default: 5)
+        The number of articles to query per api call. Setting this higher will reduce the total number of api calls, while making each call take slightly longer.
+        """
         
-        if not node in self.visited:
-            try:
-                signal.alarm(10)
-                self.query_articles([node])
-                self.visited.update([node])
-                signal.alarm(0)
-            except:
-                signal.alarm(0)
+        with concurrent.futures.ThreadPoolExecutor(max_workers=threads) as executor:
+            executor.map(self._run_threaded_expansion, self._next_link_chunks(chunk_size))
+
+    def _run_threaded_expansion(self, nodes):
+        """
+        A multithreaded network expansion helper function. Not to be called manually. 
+        """
+        try:
+            signal.alarm(10)
+            self.query_articles(nodes)
+            signal.alarm(0)
+        except:
+            signal.alarm(0)
         return
 
 
@@ -381,7 +410,7 @@ class GraphCreator:
             self.next_links += out_in
 
     def query_articles(self, titles, generate_graph=True):
-        articles = wiki_multi_query(titles)
+        articles = wiki_multi_query(titles, max_requests=self.max_requests)
         
         self.update_redirects(articles)
         
