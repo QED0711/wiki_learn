@@ -97,7 +97,7 @@ def update_continue(resp, params):
 ## Wiki Multi Query ##
 ######################
 
-def wiki_multi_query(articles, params=None, pages=None):
+def wiki_multi_query(articles, params=None, pages=None, max_requests=20, request_count=0):
     """
     Accepts multiple article titles and returns link, linkhere, and category information for each.
 
@@ -112,6 +112,13 @@ def wiki_multi_query(articles, params=None, pages=None):
 
     pages (None)
     This value will be set automatically upon recursive calls as necessary. 
+
+    max_requests (default: 20)
+    The maximum number of requests allowed for a set of articles.
+
+    request_count (default: 0)
+    the number of requests made for a set of articles. 
+    Note: do not set this manually. 
 
     Returns:
     --------
@@ -151,6 +158,8 @@ def wiki_multi_query(articles, params=None, pages=None):
 
     resp = query_wiki_api(params)
 
+    request_count += 1
+
     if not pages:
         pages = page_dicts(resp)
 
@@ -163,10 +172,14 @@ def wiki_multi_query(articles, params=None, pages=None):
     # will return an updated params with continue statements OR False
     params = update_continue(resp, params)
 
+    # if the max requests limit is exceded
+    if params and request_count >= max_requests:
+        return pages
+
     # if params still is truthy, then it was updated with a continue
     # start the process again on the continued params
     if params:
-        return wiki_multi_query(articles, params, pages)
+        return wiki_multi_query(articles, params, pages, max_requests, request_count)
 
     return pages
 
