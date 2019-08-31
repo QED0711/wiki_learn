@@ -22,6 +22,7 @@ import signal
 import warnings
 warnings.filterwarnings("ignore")
 
+from url_utils import *
 from wiki_scrapper import WikiScrapper
 from WikiMultiQuery import wiki_multi_query
 from graph_helpers import create_dispersion_df, sort_dict_values, format_categories, compare_categories, rank_order, similarity_rank
@@ -36,11 +37,11 @@ class GraphCreator:
     def __init__(self, entry, include_see_also=True, max_recursize_requests=50):
         self.graph = nx.DiGraph()
 
-        self.entry = entry
+        self.entry = get_title(entry) # from url_utils
 
         self.max_requests = max_recursize_requests
 
-        ws = WikiScrapper(f"https://en.wikipedia.org/wiki/{entry}")
+        ws = WikiScrapper(f"https://en.wikipedia.org/wiki/{self.entry}")
         ws.parse_intro_links()
 
         self.primary_nodes = {title : True for title in ws.get_primary_links(include_see_also=include_see_also)}
@@ -48,7 +49,7 @@ class GraphCreator:
         # see also articles to be used as targets for evaluation
         self.see_also_articles = ws.see_also_link_titles
 
-        self.visited = {entry}
+        self.visited = {self.entry}
         self.next_links = []
         
         self.categories = {}
@@ -56,7 +57,7 @@ class GraphCreator:
         self.redirect_targets = []
         self.redirect_sources = {}
         
-        self.query_articles([entry])
+        self.query_articles([self.entry])
 
         # setup timeout function
 
