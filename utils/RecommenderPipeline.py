@@ -108,8 +108,8 @@ class Recommender:
                         differences[i][self.classes[1]] += 1
                 differences[i]['difference'] = abs(differences[i][self.classes[0]] - differences[i][self.classes[1]])
         
-        # set decision threshold based on optimum value 
-        decision_threshold = sorted(differences, key=lambda x: x['difference'])[0]['threshold']
+            # set decision threshold based on optimum value 
+            decision_threshold = sorted(differences, key=lambda x: x['difference'])[0]['threshold']
         
         for node in self.predictions:
             pred = node['label_proba'][0] > decision_threshold
