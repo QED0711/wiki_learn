@@ -60,7 +60,15 @@ class Recommender:
         
         self.classes = model.classes_
 
-        X = self.scaled.drop(["node", "similarity_rank"], axis=1)[:size]
+        # change these drop terms according to the best model
+        X = self.scaled.drop([
+            "node", 
+            "similarity_rank",
+            "shortest_path_length_to_entry",
+            "primary_link",
+            "category_matches_with_source",
+            "shortest_path_length_from_entry",
+        ], axis=1)[:size]
         preds = [list(x) for x in model.predict_proba(X)]
 
         result = self.scaled[["node", "similarity_rank"]][:size]
@@ -70,9 +78,9 @@ class Recommender:
         result_dict = result.to_dict(orient="index")
         self.predictions = [val for key, val in result_dict.items()]
 
-    def format_results(self):
+    def format_results(self, decision_threshold=0.5):
         for node in self.predictions:
-            pred = node['label_proba'][0] > node['label_proba'][1]
+            pred = node['label_proba'][0] > decision_threshold
             node['position'] = self.classes[0] if pred else self.classes[1]
         
         return {
