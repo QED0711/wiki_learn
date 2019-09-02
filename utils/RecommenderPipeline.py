@@ -64,10 +64,10 @@ class Recommender:
         X = self.scaled.drop([
             "node", 
             "similarity_rank",
-            "shortest_path_length_to_entry",
-            "primary_link",
-            "category_matches_with_source",
-            "shortest_path_length_from_entry",
+            # "shortest_path_length_to_entry",
+            # "primary_link",
+            # "category_matches_with_source",
+            # "shortest_path_length_from_entry",
         ], axis=1)[:size]
         preds = [list(x) for x in model.predict_proba(X)]
 
