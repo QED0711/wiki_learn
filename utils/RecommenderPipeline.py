@@ -78,13 +78,46 @@ class Recommender:
         result_dict = result.to_dict(orient="index")
         self.predictions = [val for key, val in result_dict.items()]
 
-    def format_results(self, decision_threshold=0.5):
+    def format_results(self, decision_threshold=None):
+        """
+        Takes the calculated prediction probabilities and converts them to before/after labeles
+
+        Input:
+        ------
+        decision_threshold (default: None, float between 0. and 1.)
+        If set, will assign labeles based on on the decision threshold. If not set, will determine the optimum value where classes are most equal. Set to 0.5 if you want an unweighted decision.
+
+        Returns:
+        --------
+        A final results dictionary with the entry, decision threshold (user set or calculated), and the class predictions
+        """
+        # if decision threshold is not set, calculate the aproximate optimum value where classes are
+        # most equal
+        if not decision_threshold:        
+            thresholds = list(np.arange(0.25, 0.75, 0.01))
+            differences = []
+            for i, thresh in enumerate(thresholds):
+                differences.append({"threshold": thresh, self.classes[0]: 0, self.classes[1]: 0})
+                for node in self.predictions:
+                    pred = node['label_proba'][0] > thresh
+                    node['position'] = self.classes[0] if pred else self.classes[1]
+                
+                    if node['position'] == self.classes[0]:
+                        differences[i][self.classes[0]] += 1
+                    else:
+                        differences[i][self.classes[1]] += 1
+                differences[i]['difference'] = abs(differences[i][self.classes[0]] - differences[i][self.classes[1]])
+        
+        # set decision threshold based on optimum value 
+        decision_threshold = sorted(differences, key=lambda x: x['difference'])[0]['threshold']
+        
         for node in self.predictions:
             pred = node['label_proba'][0] > decision_threshold
             node['position'] = self.classes[0] if pred else self.classes[1]
-        
+
         return {
             "entry": self.gc.entry,
+            "decision_threshold": decision_threshold,
             "predictions": self.predictions
         }
 
