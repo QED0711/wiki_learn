@@ -31,8 +31,8 @@ from GraphAPI import GraphCreator
 
 
 
-with open("../models/rf_classifier_v1.pkl", "rb") as model:
-    rf_classifier = pickle.load(model)
+# with open("../models/rf_classifier_v1.pkl", "rb") as model:
+#     rf_classifier = pickle.load(model)
 
 ###############
 # RECOMMENDER #
@@ -48,13 +48,13 @@ class Recommender:
         
 
 
-    def fit(self):
+    def fit(self, scaler=MinMaxScaler):
         self._expand_network()
         self._graph_cleanup()
         self._get_features()
         self._calculate_similarity()
         
-        self.scaled = self._scale_features()
+        self.scaled = self._scale_features(scaler)
 
     def predict(self, model, size=100):
         
@@ -95,8 +95,8 @@ class Recommender:
     def _calculate_similarity(self):
         self.gc.rank_similarity()
 
-    def _scale_features(self):
-        return self.gc.scale_features_df(scaler=MinMaxScaler, 
+    def _scale_features(self, scaler=MinMaxScaler):
+        return self.gc.scale_features_df(scaler=scaler, 
             copy=True).sort_values("similarity_rank", 
             ascending=False).reset_index().drop("index", axis=1)
 
