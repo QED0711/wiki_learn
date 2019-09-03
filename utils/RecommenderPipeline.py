@@ -143,41 +143,8 @@ class Recommender:
 
     
 
-def predictor(entry, max_initial_nodes=500):
-
-    gc = GraphCreator(entry)
-
-    if len(gc.graph.nodes) > max_initial_nodes:
-        return "Too Large"
-    
-    gc.expand_network_threaded(threads=20, chunk_size=1)
-    gc.redraw_redirects()
-    gc.update_edge_weights()
-    features_df = gc.get_features_df(rank=False)
-    gc.rank_similarity()
-    scaled_feature_df = gc.scale_features_df(scaler=MinMaxScaler, copy=True) # Makes a copy of the df
-    sorted_scaled = scaled_feature_df.sort_values("similarity_rank", ascending=False).reset_index().drop("index", axis=1)
-
-    # drop the entry node row from recommendations
-    # limit to first 100 recommendations
-    sorted_scaled = sorted_scaled[sorted_scaled.node != gc.entry][0:100].reset_index().drop("index", axis=1)
-
-    # format df for predictions
-    X = sorted_scaled.drop(["node", "similarity_rank"], axis=1)
-
-    y_preds = rf_classifier.predict_proba(X)
-
-    classes = rf_classifier.classes_
-
-    sorted_scaled['label'] = list(y_preds)
-
-    results = sorted_scaled[["node", "label", "similarity_rank"]].to_dict(orient="index")
-
-
-    return results
-
 
 
 
 if __name__ == "__main__":
-    prediction_pipeline("Prevention science")
+    pass
