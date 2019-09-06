@@ -12,6 +12,10 @@ import time
 
 class WikiScrapper:
     
+    """
+    This is a depreceated class to scrape wikipedia pages for See Also links. It is archived here for reference, but has been replaced by the wiki_scrapper module in the project.
+    """
+
     def __init__(self):
         self.data = []
     
