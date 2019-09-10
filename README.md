@@ -6,12 +6,13 @@ ___
 ## Table of Contents:
 
 #### 1. [Problem Statement](#problem-statement)
-#### 2. [Project Outline](#)
-#### 3. [Data](#)
-#### 4. [Recommendation System](#)
-#### 5. [Classification Model](#)
-#### 6. [References](#)
-#### 7. [Linked Repositories](#)
+#### 2. [Project Outline](#project-outline)
+#### 3. [Data](#data)
+#### 4. [Recommendation System](#recommendation-system)
+#### 5. [Classification Model](#classification-model)
+#### 6. [Custom Classes](#custom-classes)
+#### 7. [References](#references)
+#### 8. [Linked Repositories](#linked-repositories)
 
 ___
 
@@ -111,7 +112,36 @@ To train these models, my colleagues and I hand labeled around 400 pieces of dat
 
 ### Best Performing Model
 
-After trying several different models, my best performing model was a Random Forest, achieving around a 0.7 test accuracy score. 
+After trying several different models, my best performing model was a Random Forest, achieving around 0.8 train accuracy and 0.7 test accuracy scores. 
 
-The confusion matrix and AUC/ROC curve below shows how this random forest model performed on all of the hand labeled data. 
+The confusion matrix and AUC/ROC curve below shows how this random forest model performed on all of the hand labeled data.
 
+![](https://github.com/QED0711/wiki_learn/blob/master/visuals/confusion_matrix_rf.png?raw=true)
+
+![](https://github.com/QED0711/wiki_learn/blob/master/visuals/auc_roc_curve.png?raw=true)
+
+___
+
+## Custom Classes
+
+To streamline the entire process described above, I built two custom classes to handle graph creation, recommendation, and classification. 
+
+The entire recommendation and classification pipeline can be written in just a few lines of code:
+
+```
+# initialize a graph with a user specified central node
+gc = GraphCreator("https://en.wikipedia.org/wiki/Decision_tree")
+
+# initialize a recommendation pipeline and pass in our gc object
+rec = Recommender(gc)
+
+# fit the recommender, and pass in a scaler to scale the final results
+rec.fit(scaler=Normalizer)
+
+# make label predictions by passing in a trained classifier model
+rec.predict(rf_classifier)
+
+# return formatted results with labels
+rec.format_results()
+```
+___
