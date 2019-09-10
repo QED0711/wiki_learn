@@ -20,3 +20,4 @@ def save_dict_to_mlab(results_dict):
     data_inserter.insert_one(results_dict)
 
     client.close()
+

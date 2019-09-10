@@ -4,8 +4,30 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 def plot_validation_scores(df, entry):
+    df = df.sort_values("score", ascending=False).reset_index()
+    fig, ax = plt.subplots(figsize=(16,6))
+    ax.set_facecolor("#F2F2F2")
+
+    bp = sns.barplot(x=df['index'], y="score", data=df)
+
+    for i, row in df.iterrows():
+    #     pdb.set_trace()
+        bp.text(i - 0.25, row.score + 0.01, str(round(row.score, 4)))
+
+    plt.xticks(rotation=70, fontsize=16)
+
+    plt.xlabel("Ranking Metric", fontsize=16)
+    plt.ylabel("Percentile", fontsize=(16))
+
+    plt.title(f"Top Percentile to Capture all 'See Also' Links\nTopic: {entry}", fontsize=26)
+
+
+    plt.show()
+
+
+def plot_validation_percentiles(df, entry):
     """
-    given a validation score dataframe, plots the score and difference values in a barplot
+    given a validation score dataframe, plots the 1st, 5th, 10, and 20th top percentiles with regard to what percentage of 'See Also' links they captured.
     """
 
 
@@ -42,3 +64,4 @@ def plot_validation_scores(df, entry):
     plt.title(f"% 'See Also' links captured in top recs.\nby similarity score - {entry}", fontsize=26)
 
     plt.show()
+
