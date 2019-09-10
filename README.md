@@ -129,7 +129,7 @@ To streamline the entire process described above, I built two custom classes to 
 The entire recommendation and classification pipeline can be written in just a few lines of code:
 
 ```
-# initialize a graph with a user specified central node
+# initialize a graph with a user specified central node (link to Wikipedia article)
 gc = GraphCreator("https://en.wikipedia.org/wiki/Decision_tree")
 
 # initialize a recommendation pipeline and pass in our gc object
@@ -145,3 +145,24 @@ rec.predict(rf_classifier)
 rec.format_results()
 ```
 ___
+
+## Refernces
+
+[A graph-based recommender system for a digital library](https://www.researchgate.net/publication/220923824_A_graph-based_recommender_system_for_digital_library)
+
+> Discusses the use and implementation of graph based recommender systems, and various ways go about finding similarities between nodes in a network
+
+[Citolytics - A Link-based Recommender System for Wikipedia](https://www.gipp.com/wp-content/papercite-data/pdf/schwarzer2017.pdf)
+
+> A recommendation system built specifically for Wikipedia articles. Discusses the use of the 'See Also' links as a _Gold Standard_ for validation.
+
+___
+
+## Linked Repositories
+
+This project has been deployed as a full stack web app. The repositories for the back and front ends can be found at the follwoing links:
+
+#### [Flask Back End](https://github.com/QED0711/wiki_learn_flask) 
+
+#### [React Front End](https://github.com/QED0711/wiki_learn_react) 
+
