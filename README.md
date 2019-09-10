@@ -85,7 +85,7 @@ While a large amount of labeled data is not easily retrievable, many Wikipedia a
 
 Using these 'See Also' links as a sudo ground truth, I validate my recommendations by seeing how highly rated the 'See Also' links are.  
 
-As a visual display, here we can see how my custom similarity_rank performs compared to other collected features. 
+As a visual display, here we can see how my custom similarity_rank performs compared to other collected features. Here, I am using the topic, 'Random Forest', as the central node in my network.
 
 ![](https://github.com/QED0711/wiki_learn/blob/master/visuals/similarity_rank_chart.png?raw=true)
 
@@ -99,5 +99,19 @@ Similar to the previous chart, we can see how my similarity_rank compares to sev
 
 Given these results, it is reasonable to assume that the recommendations generated are valid. 
 
+___
 
+## Classification Model
+
+Recommendations are only one part of this curriculum development tool. When a user wishes to know more about a particular topic, they will likely want to know if any of the generated recommendations are prerequesite knowledge, and which recommendations should be studied after a baseline knowledge is achieved. 
+
+To accommodate this, I developed machine learning models to determine if a recommendation should come before or after a given topic. 
+
+To train these models, my colleagues and I hand labeled around 400 pieces of data. The data used here came from the numerical features extracted from my generated graph networks. In passing these features and labels into a machine learning model, the goal is to find some underlying relationship between a node's features and is relative position (before or after) to the central node. 
+
+### Best Performing Model
+
+After trying several different models, my best performing model was a Random Forest, achieving around a 0.7 test accuracy score. 
+
+The confusion matrix and AUC/ROC curve below shows how this random forest model performed on all of the hand labeled data. 
 
