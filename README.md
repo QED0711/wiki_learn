@@ -148,7 +148,7 @@ rec.format_results()
 ```
 ___
 
-## Refernces
+## References
 
 [A graph-based recommender system for a digital library](https://www.researchgate.net/publication/220923824_A_graph-based_recommender_system_for_digital_library)
 
