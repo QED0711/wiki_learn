@@ -1,6 +1,8 @@
 # Wiki Learn
 
 ### A curriculum development tool for the modern web
+
+Find the deployed web app [here](https://wikilearn.netlify.com)
 ___
 
 ## Table of Contents:
@@ -160,7 +162,7 @@ ___
 
 ## Linked Repositories
 
-This project has been deployed as a full stack web app. The repositories for the back and front ends can be found at the follwoing links:
+This project has been deployed as a full stack [web app](https://wikilearn.netlify.com). The repositories for the back and front ends can be found at the follwoing links:
 
 #### [Flask Back End](https://github.com/QED0711/wiki_learn_flask) 
 
