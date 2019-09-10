@@ -79,7 +79,25 @@ The logic behind a validation test for a recommendation system is as follows:
 
 > If I know some items that are highly related to another item, and my recommendations place those items high on the list, I can be reasonably confident that my results are valid. 
 
+While a large amount of labeled data is not easily retrievable, many Wikipedia articles do have human labeled articles that are known to be highly related to the current topic. These are found in the 'See Also' section. 
 
+![](https://github.com/QED0711/wiki_learn/blob/master/visuals/see_also.png?raw=true)
+
+Using these 'See Also' links as a sudo ground truth, I validate my recommendations by seeing how highly rated the 'See Also' links are.  
+
+As a visual display, here we can see how my custom similarity_rank performs compared to other collected features. 
+
+![](https://github.com/QED0711/wiki_learn/blob/master/visuals/similarity_rank_chart.png?raw=true)
+
+We can read each colum in the above chart as the top percentile containing all 'See Also' links. As we can see, my similarity_rank places all the 'See Also' links in the top 99.37th percentile. 
+
+Alternatively, we can look at this validation test in another way. We can see what percentage of our recommendations we must traverse before we capture all the 'See Also' links.
+
+![](https://github.com/QED0711/wiki_learn/blob/master/visuals/similarity_rank_chart_v2.png?raw=true)
+
+Similar to the previous chart, we can see how my similarity_rank compares to seveal individual features. Each bar can be read as how many of the 'See Also' links were captured in a given percentage of our recommendations. 
+
+Given these results, it is reasonable to assume that the recommendations generated are valid. 
 
 
 
