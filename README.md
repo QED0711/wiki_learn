@@ -33,6 +33,8 @@ ___
 
 - **reports:** Contains a presentation slide deck with a summary of the main analysis. 
 
+- **utils:** .py files containing the code for the main classes (GraphCreator and Recommender), and other helper functions.
+
 - **visuals:** All visuals used in the following README and presentation.
 
 ___
