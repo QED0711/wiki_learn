@@ -30,15 +30,27 @@ from graph_helpers import create_dispersion_df, sort_dict_values, format_categor
 from GraphAPI import GraphCreator
 
 
-
-# with open("../models/rf_classifier_v1.pkl", "rb") as model:
-#     rf_classifier = pickle.load(model)
-
 ###############
 # RECOMMENDER #
 ###############
 
 class Recommender:
+
+    """
+    A recommendation pipeline that will handle the execution of all background tasks like network expanssion, feature extraction, and result formatting.
+
+    Input:
+    ------
+
+    graph_creator 
+    an initialized GraphCreator instance.
+
+    threads (default: 20, int)
+    the number of threads to handle api calls for network expansion
+
+    chunk_size (default: 1, int)
+    the number of articles in a single api request
+    """
 
     def __init__(self, graph_creator, threads=20, chunk_size=1,):
         self.gc = graph_creator
@@ -48,7 +60,16 @@ class Recommender:
         
 
 
-    def fit(self, scaler=MinMaxScaler):
+    def fit(self, scaler=Normalizer):
+        """
+        Once initialized with a valid GraphCreator instance, performs network expanssion, graph cleanup, feature extraction, and similarity score calculation. 
+
+        Input:
+        ------
+
+        scaler (default: Normalizer, an sklearn scaler object)
+        An object to handle data scaling during feature extraction.
+        """
         self._expand_network()
         self._graph_cleanup()
         self._get_features()
@@ -57,7 +78,18 @@ class Recommender:
         self.scaled = self._scale_features(scaler)
 
     def predict(self, model, size=100):
-        
+        """
+        Once fit to the network and ranked in similarity order, performs label classification (before/after) for the top recommendations.
+
+        Input:
+        ------
+
+        model (default: None, sklearn classifier model)
+        A trained sklearn classifier model.
+
+        size (default: 100, int)
+        the number of recommendations to return.
+        """
         self.classes = model.classes_
 
         # change these drop terms according to what the model expects
@@ -126,19 +158,34 @@ class Recommender:
     ##########################
 
     def _expand_network(self):
+        """
+        Performs network expanssion on the provided GraphCreator instance
+        """
         self.gc.expand_network_threaded(threads=self.threads, chunk_size=self.chunk_size)
 
     def _graph_cleanup(self):
+        """
+        Performs graph cleanup (redirects) on the provided GraphCreator instance
+        """
         self.gc.redraw_redirects()
         self.gc.update_edge_weights()
 
     def _get_features(self):
+        """
+        Performs feature extraction on the provided GraphCreator instance
+        """
         self.gc.get_features_df(rank=False)
 
     def _calculate_similarity(self):
+        """
+        Performs similarity rank calculation on the provided GraphCreator instance
+        """
         self.gc.rank_similarity()
 
     def _scale_features(self, scaler=MinMaxScaler):
+        """
+        Performs feature scaling on the provided GraphCreator instance
+        """
         return self.gc.scale_features_df(scaler=scaler, 
             copy=True).sort_values("similarity_rank", 
             ascending=False).reset_index().drop("index", axis=1)

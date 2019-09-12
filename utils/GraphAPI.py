@@ -17,8 +17,6 @@ from sklearn.preprocessing import normalize, StandardScaler, Normalizer, RobustS
 
 import networkx as nx
 
-# import signal
-
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -44,7 +42,7 @@ class GraphCreator:
     entry (required, string)
     A string containing the title of a Wikipedia article or a valid Wikipedia URL.
 
-    include_see_also (defaul: True, bool)
+    include_see_also (default: True, bool)
     If True, marks any see also links as important and related to the main topic (default).
     If False, does nothing to the see also links. Mark as False if validating recommendations
 
@@ -77,13 +75,6 @@ class GraphCreator:
         self.redirect_sources = {}
         
         self.query_articles([self.entry])
-
-        # setup timeout function
-
-        # def handle_alarm(signum, frame):
-        #     raise RuntimeError
-
-        # signal.signal(signal.SIGALRM, handle_alarm)
 
     ######################################
     # GRAPH SETUP & MAINTAINANCE METHODS #
@@ -129,6 +120,9 @@ class GraphCreator:
     ##############################
 
     def get_shared_categories_with_source(self):
+        """
+        Matches all categories that are shared between each node and the entry node.
+        """
         cat_matches = {}
         for node in self.graph.nodes:
             cat_matches[node] = compare_categories(self.entry, node, self.categories, starting_count=0)
@@ -437,15 +431,12 @@ class GraphCreator:
                 if len(link_group) == group_size or (i == num_links - 1 and len(link_group) > 0):
                     print("{:.2%}".format(i/num_links)) if log_progress else None
                     try:
-                        # signal.alarm(timeout)
                         self.visited.update(link_group)
                         self.query_articles(link_group)
-                        # signal.alarm(0)
                         link_group = []
                     except:
                         link_group = []
                         continue
-        # signal.alarm(0)
 
     def expand_network_threaded(self, threads=10, chunk_size=5):
         """
@@ -474,12 +465,9 @@ class GraphCreator:
         A multithreaded network expansion helper function. Not to be called manually. 
         """
         try:
-            # signal.alarm(10)
             self.query_articles(nodes)
-            # signal.alarm(0)
         except:
             return
-            # signal.alarm(0)
         return
 
 
