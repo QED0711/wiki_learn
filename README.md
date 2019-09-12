@@ -7,14 +7,33 @@ ___
 
 ## Table of Contents:
 
-#### 1. [Problem Statement](#problem-statement)
-#### 2. [Project Outline](#project-outline)
-#### 3. [Data](#data)
+#### 1. [File Struture](#file-structure)
+#### 2. [Problem Statement](#problem-statement)
+#### 3. [Project Outline](#project-outline)
+#### 4. [Data](#data)
 #### 4. [Recommendation System](#recommendation-system)
-#### 5. [Classification Model](#classification-model)
-#### 6. [Custom Classes](#custom-classes)
-#### 7. [References](#references)
-#### 8. [Linked Repositories](#linked-repositories)
+#### 6. [Classification Model](#classification-model)
+#### 7. [Custom Classes](#custom-classes)
+#### 8. [References](#references)
+#### 9. [Linked Repositories](#linked-repositories)
+
+___
+
+## File Structure
+
+- **data:** collection of API exploration and testing data, and user labeled data.
+
+- **data-processing:** Notebooks used to retrieve data from the Wikipedia API and save in csv format for user labeling. 
+
+- **exploration:** Exploratory notebooks in which I developed and tested code for the API calls, and GraphCreator and Recommender classes
+
+- **models:** Trained models that have been pickled and saved for later import.
+
+- **notebooks:** Three notebooks demonstrating the use of models and main classes (GraphCreator & Recommender).
+
+- **reports:** Contains a presentation slide deck with a summary of the main analysis. 
+
+- **visuals:** All visuals used in the following README and presentation.
 
 ___
 
