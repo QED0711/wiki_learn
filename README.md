@@ -176,7 +176,7 @@ rec.predict(rf_classifier)
 # return formatted results with labels
 rec.format_results()
 ```
-A demonstration of this code can be found in [`notebooks/RecommenderPipeline.ipynb`](https://github.com/QED0711/wiki_learn/blob/master/notebooks/RecommenderPipeline.ipynb)
+A more in-depth demonstration of this code with comments can be found in [`notebooks/RecommenderPipeline.ipynb`](https://github.com/QED0711/wiki_learn/blob/master/notebooks/RecommenderPipeline.ipynb)
 
 ___
 
@@ -195,7 +195,7 @@ ___
 
 ## Linked Repositories
 
-This project has been deployed as a full stack [web app](https://wikilearn.netlify.com). The repositories for the back and front ends can be found at the follwoing links:
+This project has been deployed as a full stack [web app](https://wikilearn.netlify.com). The repositories for the back and front ends can be found at the following links:
 
 #### [Flask Back End](https://github.com/QED0711/wiki_learn_flask) 
 
