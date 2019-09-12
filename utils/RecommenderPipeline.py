@@ -22,7 +22,7 @@ import networkx as nx
 import warnings
 warnings.filterwarnings("ignore")
 
-from url_utils import *
+# from url_utils import *
 from wiki_scrapper import WikiScrapper
 from WikiMultiQuery import wiki_multi_query
 from graph_helpers import create_dispersion_df, sort_dict_values, format_categories, compare_categories, rank_order, similarity_rank

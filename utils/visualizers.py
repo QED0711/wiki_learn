@@ -4,6 +4,9 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 def plot_validation_scores(df, entry):
+    """
+    Plots the validation scores for each similarity metric. 
+    """
     df = df.sort_values("score", ascending=False).reset_index()
     fig, ax = plt.subplots(figsize=(16,6))
     ax.set_facecolor("#F2F2F2")
@@ -11,7 +14,6 @@ def plot_validation_scores(df, entry):
     bp = sns.barplot(x=df['index'], y="score", data=df)
 
     for i, row in df.iterrows():
-    #     pdb.set_trace()
         bp.text(i - 0.25, row.score + 0.01, str(round(row.score, 4)))
 
     plt.xticks(rotation=70, fontsize=16)

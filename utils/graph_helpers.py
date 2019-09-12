@@ -15,17 +15,27 @@ def dict_values_to_df(dict, columns):
     return pd.DataFrame(to_list, columns=columns)
 
 def create_dispersion_df(G, central_node, node_list):
+    """
+    DEPRECIATED: gets the dispersion of each node in the network. 
+    The runtime on this can be exceptionally long, and is therefore not suitable for use in a live deployment
+    """
     print("MAKING DISPERSION")
     dispersion = [(central_node, node, nx.dispersion(G, central_node, node)) for node in node_list]
     return pd.DataFrame(dispersion, columns=["entry", "node", "dispersion"]).sort_values("dispersion", ascending=False).reset_index().drop("index", axis=1)
 
 def format_categories(cat_list):
+    """
+    Create a dictionary for fast (O(1)) retrieval of categories for later comparison
+    """
     cat_dict = {}
     for cat in cat_list:
         cat_dict[cat] = True    
     return cat_dict
 
 def compare_categories(node1, node2, categories, starting_count=1):
+    """
+    given two nodes and a category dictionary, finds all common categories.  
+    """
     match_count = starting_count
     if node1 == node2:
         return 1
